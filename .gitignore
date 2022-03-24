@@ -2,3 +2,7 @@ terraform.tfvars
 .terraform/*
 .terraform*
 variables.pkrvars.hcl
+.*terraform*
+*.tfstate*
+root@*
+inventory.yaml
