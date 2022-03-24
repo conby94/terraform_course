@@ -1,0 +1,61 @@
+- name: Connectivity test
+  hosts: workshop03-code-server
+  tasks:
+  - name: Ping all the target servers
+    ping:
+
+- name: setup code server # step 1
+  hosts: workshop03-code-server
+  tasks:
+  # sudo ln -s /usr/lib/code-server/bin/code-server /usr/bin/code-server
+  - name: sudo ln
+    file:
+      src: /usr/lib/code-server/bin/code-server
+      dest: /usr/bin/code-server
+      state: link
+    become: true
+  # sudo mkdir /var/lib/code-server 
+  - name: sudo mkdir
+    file:
+      path: /var/lib/code-server 
+      state: directory
+    become: true
+  # sudo nano /lib/systemd/system/code-server.service
+  ## create file in local first then sudo cp over
+  - name: sudo cp pre-created file
+    template:
+      src: ~/aipc-mar-2022/workshop03/deploy/code-server.service.j2
+      dest: /lib/systemd/system/code-server.service
+    become: true
+  # sudo systemctl start code-server
+  # sudo systemctl status code-server ## no need
+  # sudo systemctl enable code-server
+  - name: systemd
+    systemd:
+      name: code-server
+      state: started
+      enabled: yes
+    become: true
+  
+- name: setup nginx server # step 2
+  hosts: workshop03-code-server
+  tasks:
+  - name: cp nginx conf file 
+    template:
+      src: ~/aipc-mar-2022/workshop03/deploy/code-server.conf.j2
+      dest: /etc/nginx/sites-available/code-server.conf
+    become: true
+  # sudo ln -s /etc/nginx/sites-available/code-server.conf /etc/nginx/sites-enabled/code-server.conf
+  - name:  sudo ln nginx
+    file:
+      src: /etc/nginx/sites-available/code-server.conf 
+      dest: /etc/nginx/sites-enabled/code-server.conf
+      state: link
+    become: true
+  - name: systemd nginx
+    systemd:
+      daemon_reload: yes
+      name: nginx
+      state: restarted
+    become: true
+  
